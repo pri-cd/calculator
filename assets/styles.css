@@ -32,19 +32,50 @@ body {
 }
 
 
-.calculatorContainer
-{
-    flex: 1; 
+.calculatorContainer {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 
-    
+    .calculator {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .calculationSpace {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .rowKeysContainer {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        .rowKeysContainer .button,
+        .button0 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button {
+            flex: 1
+        }
+
+        .button0 {
+            flex: 3;
+        }
+    }
 }
 
-.footer
-{
+.footer {
     display: flex;
     flex-direction: row;
 
