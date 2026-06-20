@@ -5,7 +5,7 @@
     --keysBGcolor: #E5A9A9;
 
     --spaceBGcolor: #254441;
-    --spaceFontColor: var(--calculatorBGcolor);
+    --spaceFontColor: #F4E4BA;
 }
 
 body {
@@ -71,6 +71,7 @@ body {
             opacity: 0.8;
 
             font-size: large;
+            height: 40px;
         }
 
 
@@ -102,6 +103,11 @@ body {
                 flex-direction: row;
                 gap: 10px;
                 flex: 1;
+            }
+
+            .GitHub img{
+                height: 30px;
+                border-radius: 5px;
             }
         }
     }
