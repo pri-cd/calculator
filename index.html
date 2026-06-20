@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
     <link rel="stylesheet" href="./assets/styles.css">
-    <script src="./assets/script.js"></script>
+    <script src="./assets/script.js" defer></script>
 </head>
 
 <body>
@@ -28,7 +28,7 @@
                 <button id="number7" class="number button">7</button>
                 <button id="number8" class="number button">8</button>
                 <button id="number9" class="number button">9</button>
-                <button id="multiply" class="multiply"><img src="./assets/resources/mul.svg" alt=""></button>
+                <button id="multiply" class="multiply button"><img src="./assets/resources/mul.svg" alt=""></button>
             </div>
             <div class="rowKeysContainer">
                 <button id="number4" class="number button">4</button>
@@ -44,8 +44,11 @@
             </div>
             <div class="rowKeysContainer">
                 <button id="number0" class="number button0">0</button>
-                <button id="deciman" class="decimal button">.</button>
-                <button id="equal" class="equal button"><img src="./assets/resources/equal.svg" alt=""></button>
+                <!-- For better formatting/styling  -->
+                <div class="lastRowElement"> 
+                    <button id="decimal" class="decimal button">.</button>
+                    <button id="equal" class="equal button"><img src="./assets/resources/equal.svg" alt=""></button>
+                </div>
             </div>
         </div>
     </div>

@@ -1,3 +1,13 @@
+:root {
+
+    --headerBGcolor: #B0D7FF;
+    --calculatorBGcolor: #F4E4BA;
+    --keysBGcolor: #E5A9A9;
+
+    --spaceBGcolor: #254441;
+    --spaceFontColor: var(--calculatorBGcolor);
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -17,7 +27,7 @@ body {
     align-items: center;
     gap: 10px;
 
-    background-color: burlywood;
+    background-color: var(--headerBGcolor);
     padding: 10px;
 
     .logo img {
@@ -27,7 +37,7 @@ body {
 
     .title {
         font-weight: bolder;
-        font-size: x-large;
+        font-size: xx-large;
     }
 }
 
@@ -43,34 +53,56 @@ body {
         display: flex;
         flex-direction: column;
         gap: 10px;
+        background-color: var(--calculatorBGcolor);
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px 0.5px chocolate;
 
         .calculationSpace {
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
             align-items: center;
+
+            background-color: var(--spaceBGcolor);
+            padding: 10px;
+            color: var(--spaceFontColor);
+            border-radius: 5px;
+            opacity: 0.8;
+
+            font-size: large;
+        }
+
+
+        .rowKeysContainer .button,
+        .button0 {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 5px;
+            border: 1px solid brown;
+            padding: 10px;
+            background-color: var(--keysBGcolor);
+
+            font-size: large;
+            font-weight: bolder;
         }
 
         .rowKeysContainer {
             display: flex;
             flex-direction: row;
+            flex: 1;
             gap: 10px;
-        }
 
-        .rowKeysContainer .button,
-        .button0 {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .button {
-            flex: 1
-        }
-
-        .button0 {
-            flex: 3;
+            .lastRowElement {
+                display: flex;
+                flex-direction: row;
+                gap: 10px;
+                flex: 1;
+            }
         }
     }
 }
@@ -78,5 +110,8 @@ body {
 .footer {
     display: flex;
     flex-direction: row;
-
+    align-items: center;
+    justify-content: center;
+    background-color: cadetblue;
+    padding: 10px;
 }
