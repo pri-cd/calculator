@@ -3,14 +3,36 @@ const CL_SPACE_ID = "#calculationSpace";
 const CL_CONTAINER_ID = "#calculator";
 const FUNC_KEY_CLS = "function";
 const BTN_KEY_CLS = "button";
+const MAX_NUM_LENGTH = 21;
 
-const CL_STATE_OPERAND_1_RECVD = 0;
-const CL_STATE_OPERATOR_INIT_RECVD = 1;
-const CL_STATE_OPERAND_2_RECVD = 2;
-const CL_STATE_OPERATOR_FINAL_RECVD = 3;
+const ERR_MSG_DIV_ZERO = "Dividing by zero, Isn't allowed!";
+
+
+const CL_STATE_NONE = 0;
+const CL_STATE_OPERAND_1_RECVD = 1;
+const CL_STATE_OPERATOR_INIT_RECVD = 2;
+const CL_STATE_OPERAND_2_RECVD = 3;
+const CL_STATE_OPERATOR_FINAL_RECVD = 4;
+const operationVar = {
+    operandA: 0,
+    operandB: 0,
+    operator: "",
+    currState: CL_STATE_NONE,
+    operationLog: [CL_STATE_NONE],
+}
+const funcButtonIds = {
+    clearDisplay: "clearCalcButton",
+    backSpace: "backspace",
+    divide: "divide",
+    multiply: "multiply",
+    add: "add",
+    subtract: "subtract",
+    equal: "equal",
+}
 
 const DECIMAL = ".";
-let CL_DECIMAL_LOCK = false;
+let ongoingCalc = structuredClone(operationVar);
+
 
 function debug(...args) {
     if (DEBUG === true) {
@@ -18,37 +40,89 @@ function debug(...args) {
     }
 }
 
+/**
+ * Pass in a empty string to clear the message!
+ * @param {string} errorMsg 
+ */
+function showErrorMessages(errorMsg) {
+    const error = document.querySelector("#errMsg");
+    if (error instanceof HTMLElement)
+    {
+        error.textContent = errorMsg;
+    }
+}
 
 /**
- * The setter function for "CL_DECIMAL_LOCK" flag.
- * @param {boolean} lock 
+ * @param {HTMLElement} calcArea
  */
-function setDecimalLock(lock) {
-    CL_DECIMAL_LOCK = lock;
-    debug("Setting Decimal Lock!: ", CL_DECIMAL_LOCK);
+function isDecimalInArea(calcArea) {
+    let isDecimal = false;
+    if (calcArea.textContent.split("").includes(DECIMAL)) {
+        isDecimal = true;
+    }
+    return isDecimal;
 }
 
 
-/**
- * The getter function for "CL_DECIMAL_LOCK" flag.
- */
-function getDecimalLock()
-{
-    return CL_DECIMAL_LOCK;
+function handleDisplayBackspace() {
+    const display = document.querySelector(CL_SPACE_ID);
+    display.textContent = display.textContent.slice(0, -1);
+    return;
 }
 
+/**
+ * This handles the display related functionality.
+ * If passed "" empty string, It'll empty out the display.
+ * @param {string} char 
+ */
+function handleDisplaying(char) {
+    const display = document.querySelector(CL_SPACE_ID);
+    const content = display.textContent;
+
+    if (isDecimalInArea(display) && char === DECIMAL) {
+        return;
+    }
+
+    if (char === "") {
+        display.textContent = "";
+        return;
+    }
+
+    if (display.textContent.length < 21) {
+        display.textContent += char;
+    }
+}
+
+
+function resetAll() {
+    ongoingCalc = structuredClone(operationVar);
+}
+
+/**
+ * Returns "true" If the calculation area is empty!
+ * @returns {Boolean}
+ */
+function isAreaEmpty() {
+    let isEmpty = false;
+    const calcArea = document.querySelector(CL_SPACE_ID);
+
+    if (calcArea.textContent.length < 1) {
+        isEmpty = true;
+    }
+
+    return isEmpty;
+}
 
 /**
  * This gets the number from the div that displays numbers from calculator.
- * @param {boolean} [float=false]
  * @returns {Number}
  */
-function getNumberFromArea(float = false) {
+function getNumberFromArea() {
     const calcArea = document.querySelector(CL_SPACE_ID);
     let number = 0;
 
     if (calcArea instanceof HTMLElement) {
-        if (float === true) {
+        if (isDecimalInArea(calcArea) === true) {
             number = Number.parseFloat(calcArea.textContent);
             return number;
         }
@@ -58,72 +132,200 @@ function getNumberFromArea(float = false) {
 }
 
 
+
 /**
- * This handles the display related functionality.
- * @param {string} string 
- * @param {boolean} [clearDisplay=false] 
- * @param {boolean} [backSpace=false] 
+ * Return the result as per the operation.
+ * @param {operationVar} ongoingCalc 
+ * @returns {Number}
  */
-function handleDisplaying(string, clearDisplay = false, backSpace = false) {
-    const display = document.querySelector(CL_SPACE_ID);
-    const content = display.textContent
-    if (clearDisplay) {
-        display.textContent = "";
-        return;
+function operate(ongoingCalc) {
+
+    let result = 0;
+    let strResult = "";
+
+    switch (ongoingCalc.operator) {
+        case funcButtonIds.add:
+            result = ongoingCalc.operandA + ongoingCalc.operandB;
+            break;
+        case funcButtonIds.subtract:
+            result = ongoingCalc.operandA - ongoingCalc.operandB;
+            break;
+        case funcButtonIds.multiply:
+            result = ongoingCalc.operandA * ongoingCalc.operandB;
+            break;
+        case funcButtonIds.divide:
+            result = ongoingCalc.operandA / ongoingCalc.operandB;
+            break;
+        default:
+            break;
     }
 
-    if (backSpace) {
-        if (content.at(-1) === DECIMAL)
-        {
-            setDecimalLock(false);
-        }
-        display.textContent = content.slice(0, -1);
-        return;
+    if (String(result).split("").includes(DECIMAL)) {
+        result = Math.round(result * 100) / 100;
     }
-
-    if (string === DECIMAL) {
-        if (getDecimalLock()) {
-            return;
-        }
-        setDecimalLock(true);
-    }
-    display.textContent += string;
+    debug("Operating: ", ongoingCalc.operator, result);
+    return result;
 }
 
 
+
 /**
- * Handles all the calls for buttons like Delete, Backspace, Equal, Addition, Subtraction, etc.
+ * This function is called when a function key like add, subtract, equal, divide, multiply is pressed!
+ * Starts to store the value of operators & operation as needed!
+ * @param {string} keyPressed 
+ */
+function handleFunctionKeyClicks(keyPressed) {
+
+    const allowed1stOperators = ["add", "subtract", "multiply", "divide"];
+    const equalOperator = "equal";
+
+    if (!isAreaEmpty()) {
+        if (allowed1stOperators.includes(keyPressed) || keyPressed === equalOperator) {
+
+            /**
+             * This is the state when the user presses:
+             *  1. 2
+             *  2. + 
+             */
+            if ((ongoingCalc.currState === CL_STATE_NONE)) {
+
+                ongoingCalc.operandA = getNumberFromArea();
+                ongoingCalc.operator = keyPressed;
+                ongoingCalc.operationLog.push(CL_STATE_OPERAND_1_RECVD, CL_STATE_OPERATOR_INIT_RECVD);
+                ongoingCalc.currState = CL_STATE_OPERATOR_INIT_RECVD;
+
+                handleDisplaying("");
+                showErrorMessages("");
+                debug(ongoingCalc);
+                return;
+            }
+
+            /**
+             * This is the state when the user presses:
+             *  1. 2
+             *  2. +
+             *  3. <anyNumber>
+             *  4. +/=
+             */
+            if ((ongoingCalc.currState === CL_STATE_OPERATOR_INIT_RECVD)) {
+
+                /**
+                 * Handle divide by zero condition!
+                 * So, this isn't allowed:
+                 *  1. 2
+                 *  2. /
+                 *  3. 0
+                 *  4. =/<other>
+                 *  5. Give error!
+                 */
+                if (ongoingCalc.operator === "divide" && getNumberFromArea() === 0) {
+                    debug("Divide by zero, not allowed (Resetting!!)");
+                    handleDisplaying("");
+                    resetAll();
+                    showErrorMessages(ERR_MSG_DIV_ZERO);
+                    return;
+                }
+
+                if (keyPressed === equalOperator) {
+                    ongoingCalc.operandB = getNumberFromArea();
+                    ongoingCalc.operationLog.push(CL_STATE_OPERAND_2_RECVD, CL_STATE_OPERATOR_FINAL_RECVD);
+                    ongoingCalc.currState = CL_STATE_OPERATOR_FINAL_RECVD;
+                    handleDisplaying("");
+                    handleDisplaying(String(operate(ongoingCalc)));
+                    return;
+                }
+                else {
+                    ongoingCalc.operandB = getNumberFromArea();
+                    ongoingCalc.currState = CL_STATE_OPERATOR_FINAL_RECVD;
+                    ongoingCalc.operationLog.push(CL_STATE_OPERAND_2_RECVD, CL_STATE_OPERATOR_FINAL_RECVD);
+                    const result = operate(ongoingCalc);
+                    resetAll();
+
+                    ongoingCalc.operandA = result;
+                    ongoingCalc.operator = keyPressed;
+                    ongoingCalc.currState = CL_STATE_OPERATOR_INIT_RECVD;
+                    ongoingCalc.operationLog.push(CL_STATE_NONE, CL_STATE_OPERAND_1_RECVD, ongoingCalc.currState);
+                    debug(ongoingCalc);
+                    handleDisplaying("");
+                    return;
+                }
+            }
+
+            /**
+             * This state code is for when, 
+             * for example user presses in this respective order!: 
+             *  1. 3
+             *  2. +
+             *  3. 3
+             *  4. = (Should give 6)
+             *  5. = (Should give 9)
+             *  6. and, so on..
+             */
+            if (ongoingCalc.currState === CL_STATE_OPERATOR_FINAL_RECVD) {
+
+                if (keyPressed == equalOperator) {
+                    const operandA = getNumberFromArea();
+                    const operandB = ongoingCalc.operandB;
+                    const operator = ongoingCalc.operator;
+
+                    resetAll();
+
+                    ongoingCalc.operandA = operandA;
+                    ongoingCalc.operandB = operandB;
+                    ongoingCalc.operator = operator;
+
+                    ongoingCalc.currState = CL_STATE_OPERATOR_FINAL_RECVD;
+                    ongoingCalc.operationLog.push(CL_STATE_NONE, CL_STATE_OPERAND_1_RECVD, CL_STATE_OPERATOR_INIT_RECVD, CL_STATE_OPERAND_2_RECVD, ongoingCalc.currState);
+
+                    handleDisplaying("");
+                    handleDisplaying(String(operate(ongoingCalc)));
+                    debug("Nothing recived, Recursively Calculating!", ongoingCalc);
+                    return;
+                }
+                else {
+                    const operandA = getNumberFromArea();
+
+                    resetAll();
+                    ongoingCalc.operandA = operandA;
+                    ongoingCalc.operator = keyPressed;
+
+                    ongoingCalc.currState = CL_STATE_OPERATOR_INIT_RECVD;
+                    ongoingCalc.operationLog.push(CL_STATE_NONE, CL_STATE_OPERAND_1_RECVD, CL_STATE_OPERATOR_INIT_RECVD);
+                    handleDisplaying("");
+
+                    return;
+                }
+            }
+        }
+    }
+
+    debug("Please stop pressing the function without entering number!", ongoingCalc);
+}
+
+/**
+ * Handles all the calls for buttons like Delete, Backspace, Equal, add, Subtraction, etc.
  * @param {HTMLElement} targetElement 
  */
-function handleFunctionEvents(targetElement) {
-    const funcButtonIds = {
-        clearDisplay: "clearCalcButton",
-        backSpace: "backspace",
-        divide: "divide",
-        multiply: "multiply",
-        addition: "addition",
-        subtract: "subtract",
-        equal: "equal",
-    }
+function handleFunctionEventSegregation(targetElement) {
 
     if (targetElement.className.includes(FUNC_KEY_CLS)) {
 
         switch (targetElement.id) {
             case funcButtonIds.clearDisplay:
-                handleDisplaying("", true);
+                handleDisplaying("");
+                resetAll();
                 break;
             case funcButtonIds.backSpace:
-                handleDisplaying("", false, true);
+                handleDisplayBackspace();
                 break;
-            case funcButtonIds.addition:
-                break;
+            case funcButtonIds.add:
             case funcButtonIds.subtract:
-                break;
             case funcButtonIds.multiply:
-                break;
             case funcButtonIds.divide:
+                handleFunctionKeyClicks(targetElement.id);
                 break;
             case funcButtonIds.equal:
+                handleFunctionKeyClicks(targetElement.id);
                 break;
             default:
                 break;
@@ -176,7 +378,7 @@ function handleButtonActions(event) {
 
         if ((target instanceof HTMLElement) &&
             (target.className.includes(BTN_KEY_CLS))) {
-            handleFunctionEvents(target);
+            handleFunctionEventSegregation(target);
             handleNumericEvents(target)
         }
     }
