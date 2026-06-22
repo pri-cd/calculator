@@ -32,6 +32,7 @@ const funcButtonIds = {
 
 const DECIMAL = ".";
 let ongoingCalc = structuredClone(operationVar);
+const calcArea = document.querySelector(CL_SPACE_ID);
 
 
 function debug(...args) {
@@ -46,8 +47,7 @@ function debug(...args) {
  */
 function showErrorMessages(errorMsg) {
     const error = document.querySelector("#errMsg");
-    if (error instanceof HTMLElement)
-    {
+    if (error instanceof HTMLElement) {
         error.textContent = errorMsg;
     }
 }
@@ -57,7 +57,7 @@ function showErrorMessages(errorMsg) {
  */
 function isDecimalInArea(calcArea) {
     let isDecimal = false;
-    if (calcArea.textContent.split("").includes(DECIMAL)) {
+    if (calcArea.value.split("").includes(DECIMAL)) {
         isDecimal = true;
     }
     return isDecimal;
@@ -65,8 +65,7 @@ function isDecimalInArea(calcArea) {
 
 
 function handleDisplayBackspace() {
-    const display = document.querySelector(CL_SPACE_ID);
-    display.textContent = display.textContent.slice(0, -1);
+    calcArea.value = calcArea.value.slice(0, -1);
     return;
 }
 
@@ -76,20 +75,19 @@ function handleDisplayBackspace() {
  * @param {string} char 
  */
 function handleDisplaying(char) {
-    const display = document.querySelector(CL_SPACE_ID);
-    const content = display.textContent;
+    const content = calcArea.value;
 
-    if (isDecimalInArea(display) && char === DECIMAL) {
+    if (isDecimalInArea(calcArea) && char === DECIMAL) {
         return;
     }
 
     if (char === "") {
-        display.textContent = "";
+        calcArea.value = "";
         return;
     }
 
-    if (display.textContent.length < 21) {
-        display.textContent += char;
+    if (calcArea.value.length < 21) {
+        calcArea.value += char;
     }
 }
 
@@ -104,9 +102,8 @@ function resetAll() {
  */
 function isAreaEmpty() {
     let isEmpty = false;
-    const calcArea = document.querySelector(CL_SPACE_ID);
 
-    if (calcArea.textContent.length < 1) {
+    if (calcArea.value.length < 1) {
         isEmpty = true;
     }
 
@@ -118,15 +115,14 @@ function isAreaEmpty() {
  * @returns {Number}
  */
 function getNumberFromArea() {
-    const calcArea = document.querySelector(CL_SPACE_ID);
     let number = 0;
 
     if (calcArea instanceof HTMLElement) {
         if (isDecimalInArea(calcArea) === true) {
-            number = Number.parseFloat(calcArea.textContent);
+            number = Number.parseFloat(calcArea.value);
             return number;
         }
-        number = Number.parseInt(calcArea.textContent);
+        number = Number.parseInt(calcArea.value);
     }
     return number;
 }
@@ -181,14 +177,11 @@ function handleFunctionKeyClicks(keyPressed) {
 
     if (!isAreaEmpty()) {
         if (allowed1stOperators.includes(keyPressed) || keyPressed === equalOperator) {
-            
-            if (!getNumberFromArea())
-            {
+
+            if (getNumberFromArea() == undefined || getNumberFromArea() == NaN) {
                 showErrorMessages("Please Enter Valid Number!");
                 return;
             }
-
-
             /**
              * This is the state when the user presses:
              *  1. 2
@@ -306,7 +299,7 @@ function handleFunctionKeyClicks(keyPressed) {
         }
     }
 
-    debug("Please stop pressing the function without entering logic..", ongoingCalc);
+    debug("Please stop pressing the function without entering logic..", ongoingCalc, keyPressed);
     showErrorMessages("Invalid Logic!");
 }
 
@@ -392,6 +385,41 @@ function handleButtonActions(event) {
     }
 }
 
+/**
+ * 
+ * @param {KeyboardEvent} event 
+ */
+function handleKeyboardPresses(event) {
+    const whatsAllowed = "0123456789.";
+
+    event.preventDefault();
+
+    if (whatsAllowed.includes(event.key))
+    {
+        handleDisplaying(event.key);
+    }
+    switch (event.key) {
+        case "+":
+            handleFunctionKeyClicks("add");
+            break;
+        case "-":
+            handleFunctionKeyClicks("subtract");
+            break;
+        case "*":
+            handleFunctionKeyClicks("multiply");
+            break;
+        case "/":
+            handleFunctionKeyClicks("divide");
+            break;
+        case "Enter":
+            handleFunctionKeyClicks("equal");
+            break;
+        default:
+            break;
+    }
+
+}
+
 
 function registerButtonListeners() {
     const calculator = document.querySelector(CL_CONTAINER_ID);
@@ -401,4 +429,18 @@ function registerButtonListeners() {
     }
 }
 
+
+function registerKeyboardListeners() {
+
+    if (calcArea instanceof HTMLElement) {
+        calcArea.addEventListener("keypress", handleKeyboardPresses);
+    }
+}
+
+if(calcArea instanceof HTMLElement)
+{
+    calcArea.focus();
+}
+
 registerButtonListeners();
+registerKeyboardListeners();
