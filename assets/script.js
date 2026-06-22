@@ -187,7 +187,7 @@ function handleFunctionKeyClicks(keyPressed) {
              *  1. 2
              *  2. + 
              */
-            if ((ongoingCalc.currState === CL_STATE_NONE)) {
+            if ((ongoingCalc.currState === CL_STATE_NONE) && keyPressed !== equalOperator) {
 
                 ongoingCalc.operandA = getNumberFromArea();
                 ongoingCalc.operator = keyPressed;
@@ -299,7 +299,7 @@ function handleFunctionKeyClicks(keyPressed) {
         }
     }
 
-    debug("Please stop pressing the function without entering number!", ongoingCalc);
+    debug("Please stop pressing the function without entering logic..", ongoingCalc);
 }
 
 /**

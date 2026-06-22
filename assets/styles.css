@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap');
+
 :root {
 
     --headerBGcolor: #B0D7FF;
@@ -91,6 +92,8 @@ body {
 
             font-size: large;
             font-weight: 900;
+
+            opacity: 0.8;
         }
 
         .rowKeysContainer {
@@ -109,6 +112,18 @@ body {
             .function img {
                 height: 30px;
                 border-radius: 5px;
+            }
+
+            .button:hover,
+            .button0:hover {
+                opacity: 1;
+                box-shadow: 0px 0px 5px 1px #766893;
+            }
+
+            .button:active, 
+            .button0:active
+            {
+                transform: scale(0.95);
             }
         }
     }
