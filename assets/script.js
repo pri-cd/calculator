@@ -181,6 +181,13 @@ function handleFunctionKeyClicks(keyPressed) {
 
     if (!isAreaEmpty()) {
         if (allowed1stOperators.includes(keyPressed) || keyPressed === equalOperator) {
+            
+            if (!getNumberFromArea())
+            {
+                showErrorMessages("Please Enter Valid Number!");
+                return;
+            }
+
 
             /**
              * This is the state when the user presses:
@@ -300,6 +307,7 @@ function handleFunctionKeyClicks(keyPressed) {
     }
 
     debug("Please stop pressing the function without entering logic..", ongoingCalc);
+    showErrorMessages("Invalid Logic!");
 }
 
 /**
